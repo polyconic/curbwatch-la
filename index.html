@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>CurbWatch LA · Street parking rules from Echo Park to West Hollywood</title>
-<meta name="description" content="Check any block from Echo Park to West Hollywood before you park: street-sweeping days, permit streets, Dodger game-day zones, meters and where tickets actually get written.">
+<meta name="description" content="Check any block from Echo Park to West Hollywood before you park: street-sweeping days, permit streets, Dodger game-day rules, meters and ticket hotspots.">
 <link rel="canonical" href="https://curbwatch.la/">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#EEEAE1" media="(prefers-color-scheme: light)">
@@ -14,7 +14,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="CurbWatch LA">
 <meta property="og:title" content="CurbWatch LA">
-<meta property="og:description" content="Check any block from Echo Park to West Hollywood before you park: street-sweeping days, permit streets, Dodger game-day zones, meters and where tickets actually get written.">
+<meta property="og:description" content="Check any block from Echo Park to West Hollywood before you park: street-sweeping days, permit streets, Dodger game-day rules, meters and ticket hotspots.">
 <meta property="og:url" content="https://curbwatch.la/">
 <meta property="og:image" content="https://curbwatch.la/og-image.png">
 <meta property="og:image:width" content="1200">
@@ -24,7 +24,7 @@
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="CurbWatch LA">
-<meta name="twitter:description" content="Check any block from Echo Park to West Hollywood before you park: street-sweeping days, permit streets, Dodger game-day zones, meters and where tickets actually get written.">
+<meta name="twitter:description" content="Check any block from Echo Park to West Hollywood before you park: street-sweeping days, permit streets, Dodger game-day rules, meters and ticket hotspots.">
 <meta name="twitter:image" content="https://curbwatch.la/og-image.png">
 <meta name="twitter:image:alt" content="Curb Watch Los Angeles, in pixel lettering on a dark ground">
 
@@ -41,7 +41,7 @@
   "@type": "WebApplication",
   "name": "CurbWatch LA",
   "url": "https://curbwatch.la/",
-  "description": "Check any block from Echo Park to West Hollywood before you park: street-sweeping days, permit streets, Dodger game-day zones, meters and where tickets actually get written.",
+  "description": "Check any block from Echo Park to West Hollywood before you park: street-sweeping days, permit streets, Dodger game-day rules, meters and ticket hotspots.",
   "applicationCategory": "TravelApplication",
   "operatingSystem": "Any",
   "browserRequirements": "Requires JavaScript and WebGL",
@@ -307,6 +307,7 @@ details.src p{margin:6px 0 0}
   </div>
   <div class="sec more">
     <p class="fine" style="margin:0">Drawn from city data, not the curb itself: red curbs, hydrants, driveways and temporary signs aren’t mapped, and the posted sign always wins. LA hasn’t published its permit-district map since 2015, so LA permit streets appear only where permit tickets were written at that block’s own address; holidays suspend LA sweeping.</p>
+    <p class="fine"><a href="/echo-park/">Echo Park</a> · <a href="/silver-lake/">Silver Lake</a> · <a href="/hollywood/">Hollywood</a> · <a href="/koreatown/">Koreatown</a> · <a href="/east-hollywood/">East Hollywood</a> · <a href="/westlake/">Westlake</a> · <a href="/mid-wilshire/">Mid-Wilshire</a> · <a href="/beverly-grove/">Beverly Grove</a> parking rules</p>
     <p class="fine" style="margin:0"><a href="terms.html">Terms &amp; Data Notes</a> — where this comes from, how current it is, and what it can’t see. Wrong block? <a href="mailto:hello@curbwatch.la?subject=CurbWatch%20LA%20correction">Tell us</a>.</p>
     <details class="src"><summary>Sources</summary><p class="fine" id="sources"></p></details>
     <span id="meterNote" hidden></span>
@@ -1096,6 +1097,11 @@ preset('default');
 const linked = new URLSearchParams(location.search).get('q');
 if (linked && geocode(linked)) go(linked);
 else if (linked) setURL(location.pathname);
+else {
+  // the neighborhood pages link here with ?at=lon,lat,zoom to open the map on that area
+  const at = (new URLSearchParams(location.search).get('at') || '').split(',').map(Number);
+  if (at.length === 3 && at.every(Number.isFinite) && at[0] < -118 && at[0] > -119 && at[1] > 33 && at[1] < 35) { fly([at[0], at[1]], Math.min(Math.max(at[2], 11), 19)); setURL(location.pathname); }
+}
 document.fonts.ready.catch(() => {}).finally(() => { fontReady = true; redraw(); });
 
 // live occupancy (works where the page is allowed to reach data.lacity.org; otherwise the build snapshot stays)

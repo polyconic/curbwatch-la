@@ -121,3 +121,15 @@ schedule. Verifying per block killed most of it:
 So the "they ticket when no sweeper came" story is NOT provable from open data — LA
 publishes no sweeper GPS or completion records. Per-ticket schedule mismatch is real but
 rare. Any public number must come from the verified column, not the first pass.
+
+## Neighborhood pages (added 2026-10-06, for search)
+
+`python3 tools/neighborhoods.py` (run after `build.py`) writes `/echo-park/`, `/silver-lake/`,
+`/hollywood/`, `/koreatown/`, `/east-hollywood/`, `/westlake/`, `/mid-wilshire/`, `/beverly-grove/`
+and `sitemap.xml` from `curb-data.js`. Don't hand-edit them. Each lists sweeping by street, permit
+streets (worded as inferred from tickets, never as official districts), the Dodger zone, meters and
+ticket hot spots, with the data snapshot date. Blocks are sorted into neighborhoods by their first
+point using `tools/neighborhoods.geojson` (LA Times Mapping L.A. outlines, informal). The map takes
+`?at=lon,lat,zoom` to open on an area; the pages' buttons use it. West Hollywood is its own city with
+different data (`wehoSweep`, `wehoPermit`) and has no page yet. Rerun both scripts after every data
+refresh so the pages' snapshot date moves with the map.
