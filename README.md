@@ -20,24 +20,6 @@ it's drawn with a dashed boundary and uses the city's own permit and sweeping sc
 Beverly Hills falls inside the map's frame but outside its coverage — it publishes none of
 this data, so it's grayed out and a click there says so rather than implying the curb is free.
 
-## Running it
-
-Static site: `index.html` plus a data snapshot in `curb-data.js`. No build step to view it.
-
-```
-python3 -m http.server 8000
-```
-
-then open http://localhost:8000.
-
-## Refreshing the data
-
-```
-python3 -m venv .venv && .venv/bin/pip install -r tools/requirements.txt
-.venv/bin/python tools/fetch.py    # downloads everything into data/raw/ (a few minutes)
-.venv/bin/python tools/build.py    # writes curb-data.js
-```
-
 ## Sources
 
 - **LA City:** StreetsLA posted sweeping routes, street centerlines, LADOT meter inventory and live occupancy, LADOT city lots, and LA parking citations (last 6 months for ticket history, last 18 months for permit streets)
