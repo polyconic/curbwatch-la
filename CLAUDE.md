@@ -90,6 +90,12 @@ impression.
   a verdict — saying "nothing restricts this" about a city we have no data for was a lie.
   Cameras still show there (OSM covers it).
 - WeHo data is the city's own and has posted hours — trust it over inference.
+  Its `Enforcement_Hrs` strings are hand-typed (checked 2026-10-12): 82 blocks say just `24 Hours`
+  with no days (permit-only around the clock, districts 1R/2R/3R/6R), and a few are blank while the
+  popup's `Permit-Only Hours` has the value (Palm Ave, 801-899 Larrabee) — `parse_hours` handles
+  both. District 5R is mostly 7pm-7am, but Cynthia St and N San Vicente (800-1098) are 9pm-7am;
+  Greg confirmed that on the ground. Two blocks disagree between the field and the popup
+  (Crescent Hts 1300-1499: 7am vs 6am end; 900-940 Sweetzer: weekends) — the field wins.
 - LA sweeping routes are polygons with paired routes (e.g. `5P223 Th` / `5P223 F`):
   one side each day, and the data doesn't say which side.
 - **Only `Route_Type == 'Posted'` sweeping routes are used.** StreetsLA also ships four

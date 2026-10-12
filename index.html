@@ -887,7 +887,7 @@ function renderDetail() {
   let v;
   if (hitEvent) v = [T.red, 'Dodger game during your window', 'District D permits only, from 4 hours before first pitch until the game ends.'];
   else if (hitSweep) v = [T.red, 'Street cleaning in your window', 'The posted route runs during your window. Move before it starts.'];
-  else if (hitPermit) v = [T.blue, 'Permit hours, by the ticket record', s.inWeho ? 'West Hollywood’s posted hours make this block permit-only during your window.' : `${b.pwh} permit tickets were written here at these hours in the last 18 months.`];
+  else if (hitPermit) v = [T.blue, s.inWeho ? 'Permit hours, by the posted schedule' : 'Permit hours, by the ticket record', s.inWeho ? 'West Hollywood’s posted hours make this block permit-only during your window.' : `${b.pwh} permit tickets were written here at these hours in the last 18 months.`];
   else if (caution.length) v = [T.amber, 'Check the signs', caution.join(' · ')];
   else if (s.mets.length) v = [T.green, 'Metered, nothing else in the data', `No sweeping, permit or event restriction covers this block in your window. ${record}`];
   else if (b && b.rec === 0) v = [T['ink-3'], 'No data for this block', `Nothing in the city's records reaches this block: no sweeping route, no meter, no permit tickets, and no citation of any kind since ${since}. That's missing information, not permission — whatever is posted here, we can't see it.`];

@@ -346,7 +346,10 @@ def parse_hours(s):
         typ = 'permit'
         if seg.lower().startswith('2hr'):
             typ = '2hr'; seg = seg[3:].strip()
-            if not seg: rules.append([typ, 127, 0, 1440]); continue
+            # a bare "2hr" (9040-9072 Harland) has no hours; every other WeHo 2hr rule is daytime, mostly 7am-7pm
+            if not seg: rules.append([typ, 127, 420, 1140]); continue
+        # 82 blocks (districts 1R, 2R, 3R, 6R) say just "24 Hours", with no days: permit-only around the clock
+        if seg.lower().startswith('24'): seg = 'Everyday ' + seg
         m = re.match(r'(Everyday|Mon-Sun|Mon-Sat|Mon-Fri|M-F|Sat-Sun|Sun)\s+(.*)', seg)
         if not m: continue
         days = {'Everyday':127,'Mon-Sun':127,'Mon-Sat':0b1111110,'Mon-Fri':0b0111110,'M-F':0b0111110,'Sat-Sun':0b1000001,'Sun':1}[m.group(1)]
@@ -361,8 +364,10 @@ for f in weho['permit']:
     a = f['attributes']
     if not f.get('geometry'): continue
     dist = re.search(r'District: ([^<]+)', a['PopupInfo'] or '')
+    # Enforcement_Hrs is blank on a few blocks (Palm Ave, 801-899 Larrabee) whose popup still carries the hours
+    hrs = (a['Enforcement_Hrs'] or '').strip() or (lambda m: m.group(1).strip() if m else '')(re.search(r'Permit-Only Hours: ([^<]+)', a['PopupInfo'] or ''))
     for path in f['geometry']['paths']:
-        wp.append([a['Name'] or '', dist.group(1).strip() if dist else '', a['Enforcement_Hrs'] or '', parse_hours(a['Enforcement_Hrs']), enc(simp_line(path, 1))])
+        wp.append([a['Name'] or '', dist.group(1).strip() if dist else '', hrs, parse_hours(hrs), enc(simp_line(path, 1))])
 D['wehoPermit'] = wp
 wd = []
 for f in weho['districts']:
