@@ -4,8 +4,8 @@ Street-parking map for Echo Park → West Hollywood (plus Koreatown/Hollywood in
 bbox `-118.395,34.045,-118.230,34.115`). `README.md` is the public face; this file is
 the working document.
 
-Not deployed yet. Planned as a website (GitHub Pages like Greg's other sites), maybe an
-app later — `site.webmanifest` already makes it installable. Greg is designing the
+Not deployed yet. Planned as a website (GitHub Pages like Gregor's other sites), maybe an
+app later — `site.webmanifest` already makes it installable. Gregor is designing the
 visual identity, and both images in the repo are his: `FAVICON2.png` (512×512) is the only
 icon — favicon, apple-touch-icon and manifest all point at it — and `og-image.png`
 (1200×630) is the social card. Replace either by overwriting the file; nothing generates
@@ -18,7 +18,7 @@ them. Keep og-image.png at 1200×630, the ratio link previews expect.
   the live site loads no webfonts and makes no third-party requests — the terms page promises
   that, keep it true. The basemap is drawn from embedded data (no tiles). Headings carry
   negative tracking (-.01 to -.022em) since Helvetica sets loose at display sizes. An earlier
-  Fraunces/Figtree pairing was dropped; Greg found the serif ugly, and its Google Fonts URL
+  Fraunces/Figtree pairing was dropped; Gregor found the serif ugly, and its Google Fonts URL
   had been silently 400'ing anyway.
 - `curb-data.js` — `window.CURB = {...}`, ~5 MB, generated. Don't hand-edit.
 - `tools/fetch.py` → `data/raw/*.json` (gitignored), `tools/build.py` → `curb-data.js`.
@@ -70,7 +70,7 @@ impression.
   the block's permit tickets (Sycamore 1700 had 36 of 1,164 at 8–10 PM — noise).
 - **District D** (Dodger Stadium special-event permit zone: no parking 4 hrs before and
   during events, District D permits exempt) is in no dataset. `ZONE_D` in `build.py` is
-  Greg's street list: Douglas north of Sunset, Quintero, Sutherland, Macbeth,
+  Gregor's street list: Douglas north of Sunset, Quintero, Sutherland, Macbeth,
   Elysian Park Dr, Montana, Scott east of Portia. Extra blocks are inferred where ≥85%
   of address-matched no-parking tickets fall on home-game days, and are labelled as
   inferred. Concerts and other stadium events trigger it too but aren't in any feed.
@@ -94,7 +94,7 @@ impression.
   with no days (permit-only around the clock, districts 1R/2R/3R/6R), and a few are blank while the
   popup's `Permit-Only Hours` has the value (Palm Ave, 801-899 Larrabee) — `parse_hours` handles
   both. District 5R is mostly 7pm-7am, but Cynthia St and N San Vicente (800-1098) are 9pm-7am;
-  Greg confirmed that on the ground. Two blocks disagree between the field and the popup
+  Gregor confirmed that on the ground. Two blocks disagree between the field and the popup
   (Crescent Hts 1300-1499: 7am vs 6am end; 900-940 Sweetzer: weekends) — the field wins.
 - LA sweeping routes are polygons with paired routes (e.g. `5P223 Th` / `5P223 F`):
   one side each day, and the data doesn't say which side.
