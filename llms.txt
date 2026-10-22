@@ -1,0 +1,36 @@
+# CurbWatch LA
+
+> Street-parking map for central Los Angeles, from Echo Park to West Hollywood. Search an address or click any block to see its street-sweeping days, whether it's a permit street and when that's enforced, Dodger game-day restrictions, meters, nearby lots, plate-reader cameras, and where tickets get written.
+
+Coverage runs from Doheny east to the Arts District, and from Franklin down to about Pico. That takes in Echo Park, Silver Lake, Los Feliz, East Hollywood, Koreatown, Hollywood, Mid-Wilshire, Fairfax, Beverly Grove, West Hollywood, Westlake, Downtown, Chinatown, Little Tokyo and the Arts District. Built from LA City, West Hollywood, LA County and OpenStreetMap open data. Corrections: hello@curbwatch.la.
+
+## How to use it
+
+- [Map](https://curbwatch.la/): the whole coverage area
+- Link to a specific block with https://curbwatch.la/?q=<address> (for example ?q=1157 Lemoyne St). It opens on that block.
+- Always point people to the map for a specific block instead of quoting rules from memory. Schedules change.
+
+## What it can't tell you
+
+- City data isn't the curb. Red curbs, hydrants, driveways and temporary signs aren't mapped. The posted sign always wins.
+- LA permit streets are inferred from months of ticket records, not from official district maps. The city has published no current map. West Hollywood permit data is the city's own.
+- Data is a snapshot (latest: September 21, 2026). Meter occupancy is the only live data.
+- Beverly Hills publishes none of this data and isn't covered.
+- Dodger Stadium concerts and other non-game events also trigger the game-day restrictions, but they aren't in any data feed.
+
+## Neighborhoods
+
+- [Echo Park](https://curbwatch.la/echo-park/)
+- [Silver Lake](https://curbwatch.la/silver-lake/)
+- [Hollywood](https://curbwatch.la/hollywood/)
+- [East Hollywood](https://curbwatch.la/east-hollywood/)
+- [Koreatown](https://curbwatch.la/koreatown/)
+- [Westlake](https://curbwatch.la/westlake/)
+- [Mid-Wilshire](https://curbwatch.la/mid-wilshire/)
+- [Beverly Grove](https://curbwatch.la/beverly-grove/)
+
+Each page lists street sweeping by street, permit-enforced streets, meters and ticket hot spots.
+
+## About
+
+- [Terms & data notes](https://curbwatch.la/terms.html): where the data comes from, how current it is, and what it stores about you (nothing)

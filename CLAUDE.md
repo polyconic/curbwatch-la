@@ -139,3 +139,6 @@ point using `tools/neighborhoods.geojson` (LA Times Mapping L.A. outlines, infor
 `?at=lon,lat,zoom` to open on an area; the pages' buttons use it. West Hollywood is its own city with
 different data (`wehoSweep`, `wehoPermit`) and has no page yet. Rerun both scripts after every data
 refresh so the pages' snapshot date moves with the map.
+
+`llms.txt` (added 2026-10-22) is hand-written, not generated. It names the snapshot date and the
+neighborhood pages, so update it by hand after a data refresh or when a neighborhood page is added.
