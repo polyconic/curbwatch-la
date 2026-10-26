@@ -38,6 +38,12 @@ and the `blocks` decode in `index.html` before changing either.
 
 - `terms.html` is the disclaimer/privacy page, linked from the rail footnote and the sitemap.
   Keep it honest about the snapshot, the inferences and the one live request.
+- **Overlay colors:** the street lines own red, orange, amber, blue and green (each is a parking
+  state) and cover most of the map, so anything drawn over them takes a hue the streets never use
+  or neutral ink, never a street hue. Red plate readers and orange speed corridors were tried
+  2026-10-26 and both vanished into cleaning/sweeping streets. Cameras share purple (`--cam`,
+  `--speed`) and differ by form: plate readers are dots with cones, speed corridors are dashes
+  over a ground-colored casing. A new layer picks an unused form first, then an unused color.
 - Camera layer is labelled "Plate readers", not by any manufacturer — a quarter of them aren't
   Flock, and a tip-jar site shouldn't wear one company's trademark as a feature name.
 

@@ -61,7 +61,7 @@
 :root{
   --ground:#EEEAE1; --panel:#FBFAF6; --panel-2:#F1EEE6; --glass:rgba(251,250,246,.86); --ink:#2A2926; --ink-2:#6B675F; --ink-3:#9A958B; --line:#E2DDD1; --line-2:#EEE9DE;
   --road-fwy:#D8D2C5; --road-major:#FFFFFF; --road-minor:#F9F7F2; --park:#D5DDC3; --water:#C4D5DC; --label:#5A564E; --label-halo:#EEEAE1;
-  --flock:#8A4FA3; --red:#C8433B; --amber:#C48F2C; --green:#4E8A5A; --blue:#4B6FB0; --unpainted:#B9B3A6; --other:#A39D91; --orange:#D6702F; --moss:#4E7A52;
+  --cam:#8A4FA3; --speed:#8A4FA3; --red:#C8433B; --amber:#C48F2C; --green:#4E8A5A; --blue:#4B6FB0; --unpainted:#B9B3A6; --other:#A39D91; --orange:#D6702F; --moss:#4E7A52;
   --focus:#4E7A52; --shadow:0 1px 2px rgba(42,41,38,.06),0 12px 40px rgba(42,41,38,.14);
   --sign-bg:#FCFBF6; --sign-red:#B9302C; --sign-green:#2E6B44; --sign-blue:#2C55A8;
   --f-display:"Helvetica Neue",Helvetica,Arial,sans-serif; --f-ui:"Helvetica Neue",Helvetica,Arial,sans-serif;
@@ -72,14 +72,14 @@
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --ground:#1C1B18; --panel:#26241F; --panel-2:#2F2C26; --glass:rgba(38,36,31,.88); --ink:#EDE9DF; --ink-2:#A9A497; --ink-3:#7D786C; --line:#3B3831; --line-2:#332F29;
   --road-fwy:#42403A; --road-major:#37352F; --road-minor:#2B2A25; --park:#26301F; --water:#1F2E36; --label:#B7B1A3; --label-halo:#1C1B18;
-  --red:#E0625A; --amber:#E0A945; --green:#6FB07A; --blue:#7E9BD8; --unpainted:#6E695E; --other:#8B857A; --orange:#E98A4A; --moss:#7FB08A; --flock:#C392D8;
+  --red:#E0625A; --amber:#E0A945; --green:#6FB07A; --blue:#7E9BD8; --unpainted:#6E695E; --other:#8B857A; --orange:#E98A4A; --moss:#7FB08A; --cam:#C392D8; --speed:#C392D8;
   --focus:#7FB08A; --shadow:0 1px 2px rgba(0,0,0,.4),0 14px 44px rgba(0,0,0,.5);
   --sign-bg:#F4F1E8; --sign-red:#B9302C; --sign-green:#2E6B44; --sign-blue:#2C55A8;
 }}
 :root[data-theme="dark"]{
   --ground:#1C1B18; --panel:#26241F; --panel-2:#2F2C26; --glass:rgba(38,36,31,.88); --ink:#EDE9DF; --ink-2:#A9A497; --ink-3:#7D786C; --line:#3B3831; --line-2:#332F29;
   --road-fwy:#42403A; --road-major:#37352F; --road-minor:#2B2A25; --park:#26301F; --water:#1F2E36; --label:#B7B1A3; --label-halo:#1C1B18;
-  --red:#E0625A; --amber:#E0A945; --green:#6FB07A; --blue:#7E9BD8; --unpainted:#6E695E; --other:#8B857A; --orange:#E98A4A; --moss:#7FB08A; --flock:#C392D8;
+  --red:#E0625A; --amber:#E0A945; --green:#6FB07A; --blue:#7E9BD8; --unpainted:#6E695E; --other:#8B857A; --orange:#E98A4A; --moss:#7FB08A; --cam:#C392D8; --speed:#C392D8;
   --focus:#7FB08A; --shadow:0 1px 2px rgba(0,0,0,.4),0 14px 44px rgba(0,0,0,.5);
   --sign-bg:#F4F1E8; --sign-red:#B9302C; --sign-green:#2E6B44; --sign-blue:#2C55A8;
 }
@@ -152,7 +152,7 @@ button,input,select{font:inherit;color:inherit}
 .tg:has(input:checked){background:var(--ink);color:var(--panel)}
 .tg input{position:absolute;opacity:0;width:0;height:0}
 .tg .dot{width:9px;height:9px;border-radius:50%}
-.tg .cam{width:10px;height:10px;border-radius:50%;background:var(--flock);box-shadow:0 0 0 2px color-mix(in srgb,var(--flock) 35%,transparent)}
+.tg .cam{width:10px;height:10px;border-radius:50%;background:var(--cam);box-shadow:0 0 0 2px color-mix(in srgb,var(--cam) 35%,transparent)}
 .tg .psq{font:800 10px/14px var(--f-ui);width:14px;text-align:center;border-radius:3px;color:#fff;background:var(--sign-blue)}
 .fine{font-size:12px;color:var(--ink-3);line-height:1.5}
 .note{font-size:13px;color:var(--ink-2)}
@@ -202,9 +202,9 @@ details.src p{margin:6px 0 0}
 .li .p.o{background:#5C6478}.li .p.c{background:#8B9098}
 .li small{display:block;color:var(--ink-2);font-size:12.5px;line-height:1.4}
 .li .d{color:var(--ink-3);font-variant-numeric:tabular-nums;white-space:nowrap}
-.li .cm{width:18px;height:18px;border-radius:50%;background:var(--flock);margin-top:1px;box-shadow:inset 0 0 0 5px color-mix(in srgb,var(--panel) 80%,transparent)}
+.li .cm{width:18px;height:18px;border-radius:50%;background:var(--cam);margin-top:1px;box-shadow:inset 0 0 0 5px color-mix(in srgb,var(--panel) 80%,transparent)}
 .li .cm.o{background:var(--ink-3)}
-.tg .spd,.li .spd{background:repeating-linear-gradient(90deg,var(--flock) 0 5px,transparent 5px 8px);border-radius:2px}
+.tg .spd,.li .spd{background:repeating-linear-gradient(90deg,var(--speed) 0 5px,transparent 5px 8px);border-radius:2px}
 .tg .spd{width:16px;height:4px}
 .li .spd{width:18px;height:5px;margin-top:7px}
 .li a{color:inherit}
@@ -530,7 +530,7 @@ let T = {};
 function readTokens() {
   const cs = getComputedStyle(document.documentElement);
   const hex = n => { const v = cs.getPropertyValue('--' + n).trim(); const m = v.match(/^#([0-9a-f]{6})$/i); return m ? [parseInt(m[1].slice(0, 2), 16), parseInt(m[1].slice(2, 4), 16), parseInt(m[1].slice(4), 16)] : [128, 128, 128]; };
-  for (const n of ['ground', 'panel', 'ink', 'ink-2', 'ink-3', 'road-fwy', 'road-major', 'road-minor', 'park', 'water', 'label', 'label-halo', 'red', 'amber', 'green', 'blue', 'unpainted', 'other', 'orange', 'line', 'flock']) T[n] = hex(n);
+  for (const n of ['ground', 'panel', 'ink', 'ink-2', 'ink-3', 'road-fwy', 'road-major', 'road-minor', 'park', 'water', 'label', 'label-halo', 'red', 'amber', 'green', 'blue', 'unpainted', 'other', 'orange', 'line', 'cam', 'speed']) T[n] = hex(n);
   T.dark = (T.ground[0] + T.ground[1] + T.ground[2]) < 200;
 }
 const A = (c, a) => [c[0], c[1], c[2], Math.round(a * 255)];
@@ -626,16 +626,19 @@ function layers() {
     new D.PathLayer({ id: 'overlay', data: overlay, getPath: d => d.path, getColor: colorFor, getWidth: 7, widthUnits: 'meters', widthMinPixels: z < 13 ? 1.2 : 1.8, widthMaxPixels: 9,
       capRounded: true, jointRounded: true, pickable: true, autoHighlight: true, highlightColor: A(T.ink, .35),
       updateTriggers: { getColor: [S.mode, S.t0, S.t1, S.tcat, S.tAll, T.ground] } }),
-    new D.PathLayer({ id: 'speed', data: speedLines, visible: S.showSpeed, getPath: d => d.path, getColor: A(T.flock, .95), getWidth: z >= 15 ? 5 : 3.5, widthUnits: 'pixels',
+    // a ground-colored casing so the dashes hold up on orange (sweeping) and red streets
+    new D.PathLayer({ id: 'speed-case', data: speedLines, visible: S.showSpeed, getPath: d => d.path, getColor: A(T.ground, .95), getWidth: z >= 15 ? 8 : 6, widthUnits: 'pixels',
+      capRounded: true, updateTriggers: { getColor: T.ground, getWidth: z >= 15 } }),
+    new D.PathLayer({ id: 'speed', data: speedLines, visible: S.showSpeed, getPath: d => d.path, getColor: A(T.speed, 1), getWidth: z >= 15 ? 5 : 3.5, widthUnits: 'pixels',
       getDashArray: [2.5, 1.5], extensions: [new D.PathStyleExtension({ dash: true })], pickable: true, updateTriggers: { getColor: T.ground, getWidth: z >= 15 } }),
     new D.PathLayer({ id: 'sel-line', data: selPath, getPath: d => d, getColor: A(T.ink, .9), getWidth: 12, widthUnits: 'meters', widthMinPixels: 5, widthMaxPixels: 14, capRounded: true, jointRounded: true,
       updateTriggers: { getColor: T.ground } }),
     new D.ScatterplotLayer({ id: 'meters', data: meters, visible: S.showMeters && z >= 14.5, getPosition: d => d.pos, radiusUnits: 'meters', getRadius: 2.6, radiusMinPixels: z >= 16 ? 3 : 2,
       getFillColor: d => d.st === 2 && d.age < 240 ? T.green : d.st === 1 && d.age < 240 ? A(T.ink, .45) : A(T.green, .55), stroked: true, getLineColor: A(T.ground, 1), lineWidthMinPixels: .8,
       pickable: true, updateTriggers: { getFillColor: [T.ground, occTime] } }),
-    new D.SolidPolygonLayer({ id: 'alpr-cones', data: cones, visible: S.showAlpr && z >= 14.5, getPolygon: d => d.poly, getFillColor: d => A(d.a.flock ? T.flock : T['ink-3'], .22), updateTriggers: { getFillColor: T.ground } }),
+    new D.SolidPolygonLayer({ id: 'alpr-cones', data: cones, visible: S.showAlpr && z >= 14.5, getPolygon: d => d.poly, getFillColor: d => A(d.a.flock ? T.cam : T['ink-3'], .22), updateTriggers: { getFillColor: T.ground } }),
     new D.ScatterplotLayer({ id: 'alpr', data: alpr, visible: S.showAlpr, getPosition: d => d.pos, radiusUnits: 'pixels', getRadius: d => (d.flock ? 4.5 : 3.5) * (z >= 15 ? 1.2 : 1),
-      getFillColor: d => d.flock ? T.flock : A(T['ink-3'], .9), stroked: true, getLineColor: A(T.panel, 1), lineWidthUnits: 'pixels', getLineWidth: 1.5, pickable: true,
+      getFillColor: d => d.flock ? T.cam : A(T['ink-3'], .9), stroked: true, getLineColor: A(T.panel, 1), lineWidthUnits: 'pixels', getLineWidth: 1.5, pickable: true,
       updateTriggers: { getFillColor: T.ground, getLineColor: T.ground, getRadius: z >= 15 } }),
     new D.ScatterplotLayer({ id: 'pin-halo', data: S.sel ? [S.sel.pt] : [], getPosition: d => d, radiusUnits: 'pixels', getRadius: 22, getFillColor: A(T.ink, .14),
       updateTriggers: { getFillColor: T.ground } }),
