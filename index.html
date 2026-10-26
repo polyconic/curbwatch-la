@@ -204,6 +204,9 @@ details.src p{margin:6px 0 0}
 .li .d{color:var(--ink-3);font-variant-numeric:tabular-nums;white-space:nowrap}
 .li .cm{width:18px;height:18px;border-radius:50%;background:var(--flock);margin-top:1px;box-shadow:inset 0 0 0 5px color-mix(in srgb,var(--panel) 80%,transparent)}
 .li .cm.o{background:var(--ink-3)}
+.tg .spd,.li .spd{background:repeating-linear-gradient(90deg,var(--flock) 0 5px,transparent 5px 8px);border-radius:2px}
+.tg .spd{width:16px;height:4px}
+.li .spd{width:18px;height:5px;margin-top:7px}
 .li a{color:inherit}
 .mgrid{display:flex;flex-wrap:wrap;gap:3px}
 .mgrid i{width:11px;height:11px;border-radius:50%;background:var(--panel-2);border:1px solid var(--line)}
@@ -303,6 +306,7 @@ details.src p{margin:6px 0 0}
       <label class="tg"><input type="checkbox" id="showLots" checked><span class="psq">P</span>Garages &amp; lots</label>
       <label class="tg"><input type="checkbox" id="showDistricts"><span class="dot" style="background:var(--blue)"></span>WeHo permit districts</label>
       <label class="tg"><input type="checkbox" id="showAlpr" checked><span class="cam"></span>Plate readers</label>
+      <label class="tg"><input type="checkbox" id="showSpeed" checked><span class="spd"></span>Speed cameras</label>
     </div>
   </div>
   <div class="sec more">
@@ -457,6 +461,13 @@ function fmtMin(m) {
 }
 const fmtT = t => fmtMin(Math.round((t - dayStart(t)) / MIN));
 const fmtD = t => { const d = new Date(t); return DOW3[d.getUTCDay()] + ' ' + MON[d.getUTCMonth()] + ' ' + d.getUTCDate(); };
+
+// LADOT speed-camera corridors: each starts with 60 days of warning notices (AB 645), then fines
+const speed = (C.speed || []).map(([st, from, to, on, paths]) => ({ st, from, to, on: fromInput(on + 'T00:00'), paths: paths.map(p => dec(p)) }));
+const speedLines = speed.flatMap(c => c.paths.map(path => ({ c, path })));
+const WARN = 60 * DAY;
+const speedStatus = (c, t) => t < c.on ? `Switches on ${fmtD(c.on)}` : t < c.on + WARN ? `Warnings only · fines from ${fmtD(c.on + WARN)}` : 'Issuing fines';
+const speedMid = c => { const p = c.paths[0]; return p[Math.floor(p.length / 2)]; };
 const ord = n => n + (['th', 'st', 'nd', 'rd'][n] || 'th');
 
 // rule occurrences: mask of weekdays, [t0,t1) minutes, optional month-weeks mask
@@ -481,7 +492,7 @@ const nextGame = a => games.find(g => g.t + POST > a) || null;
 const permitRule = r => ({ mask: r[1], t0: r[2], t1: r[3] === 1440 && r[2] === 0 ? 1440 : r[3] });
 
 // ---------- state
-const S = { t0: 0, t1: 0, mode: 'window', tcat: -1, tAll: false, sel: null, showMeters: true, showLots: true, showDistricts: false, showAlpr: true };
+const S = { t0: 0, t1: 0, mode: 'window', tcat: -1, tAll: false, sel: null, showMeters: true, showLots: true, showDistricts: false, showAlpr: true, showSpeed: true };
 let slotMask = new Uint8Array(168);
 let routeHit = [], wsHit = [], wpHit = [];
 let viewZoom = 13;
@@ -615,6 +626,8 @@ function layers() {
     new D.PathLayer({ id: 'overlay', data: overlay, getPath: d => d.path, getColor: colorFor, getWidth: 7, widthUnits: 'meters', widthMinPixels: z < 13 ? 1.2 : 1.8, widthMaxPixels: 9,
       capRounded: true, jointRounded: true, pickable: true, autoHighlight: true, highlightColor: A(T.ink, .35),
       updateTriggers: { getColor: [S.mode, S.t0, S.t1, S.tcat, S.tAll, T.ground] } }),
+    new D.PathLayer({ id: 'speed', data: speedLines, visible: S.showSpeed, getPath: d => d.path, getColor: A(T.flock, .95), getWidth: z >= 15 ? 5 : 3.5, widthUnits: 'pixels',
+      getDashArray: [2.5, 1.5], extensions: [new D.PathStyleExtension({ dash: true })], pickable: true, updateTriggers: { getColor: T.ground, getWidth: z >= 15 } }),
     new D.PathLayer({ id: 'sel-line', data: selPath, getPath: d => d, getColor: A(T.ink, .9), getWidth: 12, widthUnits: 'meters', widthMinPixels: 5, widthMaxPixels: 14, capRounded: true, jointRounded: true,
       updateTriggers: { getColor: T.ground } }),
     new D.ScatterplotLayer({ id: 'meters', data: meters, visible: S.showMeters && z >= 14.5, getPosition: d => d.pos, radiusUnits: 'meters', getRadius: 2.6, radiusMinPixels: z >= 16 ? 3 : 2,
@@ -654,6 +667,7 @@ function tooltip({ object, layer }) {
   const st = { background: getComputedStyle(document.documentElement).getPropertyValue('--panel'), color: getComputedStyle(document.documentElement).getPropertyValue('--ink'), border: '1px solid ' + getComputedStyle(document.documentElement).getPropertyValue('--line'), borderRadius: '6px', padding: '6px 9px', maxWidth: '260px' };
   if (layer.id === 'meters') return { html: `<b>${esc(object.lim.replace('HR', ' hr').replace('MIN', ' min'))} · ${esc(object.rate)}</b><br>${esc(object.face)}<br><span style="opacity:.7">Space ${esc(object.id)}${object.st ? ' · ' + (['', 'Occupied', 'Open', 'Unknown'][object.st]) + (object.age ? ` ${ago(object.age)}` : '') : ''}</span>`, style: st };
   if (layer.id === 'alpr') return { html: `<b>Plate reader</b>${object.mfr ? ' · ' + esc(object.mfr) : ''}<br><span style="opacity:.7">${object.dirs.length ? 'Faces ' + object.dirs.map(compass).join(' & ') : 'Direction not mapped'}${object.op ? ' · ' + esc(object.op) : ''}</span>`, style: st };
+  if (layer.id === 'speed') return { html: `<b>Speed cameras</b> · ${esc(object.c.st)}<br>${esc(object.c.from)} to ${esc(object.c.to)}<br><span style="opacity:.7">${esc(speedStatus(object.c, S.t0))}</span>`, style: st };
   if (layer.id === 'lots') return { html: `<b>${esc(object.n || (object.k === 'garage' ? 'Parking garage' : 'Parking lot'))}</b><br><span style="opacity:.7">${esc(lotLine(object))}</span>`, style: st };
   if (layer.id === 'overlay') {
     if (object.kind === 'la') return { html: `<b>${esc(blockTitle(object))}</b><br><span style="opacity:.75">${esc(lvlText(object))}</span>`, style: st };
@@ -744,6 +758,7 @@ function query(lon, lat, label, hint) {
   const mets = near(gMet, meters, lon, lat).map(m => [m, Math.hypot(toM(...m.pos)[0] - pm[0], toM(...m.pos)[1] - pm[1])]).filter(x => x[1] < 70).sort((a, b) => a[1] - b[1]).map(x => x[0]);
   const lotsNear = lots.map(l => [l, Math.hypot(toM(...l.pos)[0] - pm[0], toM(...l.pos)[1] - pm[1])]).filter(x => x[1] < 650).sort((a, b) => (a[1] - (a[0].k === 'city' ? 150 : 0)) - (b[1] - (b[0].k === 'city' ? 150 : 0))).slice(0, 5);
   const cams = alpr.map(c => [c, Math.hypot(toM(...c.pos)[0] - pm[0], toM(...c.pos)[1] - pm[1])]).filter(x => x[1] < 400).sort((a, b) => a[1] - b[1]).slice(0, 6);
+  const spd = speed.map(c => [c, Math.min(...c.paths.map(p => pathDist(pm, p)))]).filter(x => x[1] < 400).sort((a, b) => a[1] - b[1]);
   let ppdIds = block ? block.ppd : [];
   if (!block && !inWeho) ppdIds = ppd.filter(p => inPoly([lon, lat], p.poly)).map(p => p.id);
   const wDist = wehoDistricts.filter(d => inPoly([lon, lat], d.poly)).map(d => d.id);
@@ -752,7 +767,7 @@ function query(lon, lat, label, hint) {
   const hl = [];
   if (useBlock) hl.push(block.path);
   wp.slice(0, 1).forEach(w => hl.push(w.path));
-  S.sel = { pt: [lon, lat], hl, inBH, block: inBH ? null : (useBlock ? block : null), wp: wp.slice(0, 2), ws: ws.slice(0, 2), inWeho, mets, lots: lotsNear, cams, ppd: [...new Set(ppdIds)], wDist, label: lbl };
+  S.sel = { pt: [lon, lat], hl, inBH, block: inBH ? null : (useBlock ? block : null), wp: wp.slice(0, 2), ws: ws.slice(0, 2), inWeho, mets, lots: lotsNear, cams, spd, ppd: [...new Set(ppdIds)], wDist, label: lbl };
   S.sheetOpen = false;
   if (isMobile() && S.touched) { $('#rail').classList.add('collapsed'); $('#railToggle').setAttribute('aria-expanded', 'false'); }
   renderDetail(); redraw();
@@ -908,11 +923,14 @@ function renderDetail() {
       ${tot ? `<div class="chart">${chartSVG(b)}</div><div class="cats">${CAT.map((c, i) => b.all[i] ? `<span class="k"><i style="background:rgb(${c.c().join(',')})"></i>${c.k}</span><span class="n">${b.all[i]}</span><span class="f">${b.win[i] ? b.win[i] + ' at your hours' : ''}</span>` : '').join('')}</div>
       <div class="fine">Most written: ${b.top.slice(0, 3).map(([v, n]) => `${esc(title(v))} ×${n}${fineOf(v) ? ` ($${fineOf(v)})` : ''}`).join(' · ')}. Shaded columns are your window’s hours.</div>` : '<div class="note">No citations recorded on this block in six months.</div>'}</div>` : (s.inWeho ? '<div class="sec"><div class="note">Ticket history covers LA City only; West Hollywood doesn’t publish citations.</div></div>' : '')}
     ${lotsHTML ? `<div class="sec"><div class="lbl">Off-street nearby</div><div class="list">${lotsHTML}</div></div>` : ''}
+    ${S.showSpeed && s.spd.length ? `<div class="sec"><div class="lbl">Speed cameras within 400 m</div><div class="list">${s.spd.map(([c, d]) => `<button class="li" data-spd="${speed.indexOf(c)}"><span class="spd"></span><span>${esc(c.st)}<small>${esc(c.from)} to ${esc(c.to)} · ${esc(speedStatus(c, a))}</small></span><span class="d">${d < 15 ? 'here' : Math.round(d / 10) * 10 + ' m'}</span></button>`).join('')}</div>
+      <div class="fine">LADOT tickets 11 mph or more over the limit by mail: $50 up to 15 over, $100 to 25, $200 above that, $500 at 100 mph. Each corridor starts with 60 days of warning notices.</div></div>` : ''}
     ${S.showAlpr ? `<div class="sec"><div class="lbl">Plate readers within 400 m</div>${s.cams.length ? `<div class="list">${s.cams.map(([c, d]) => `<button class="li" data-cam="${alpr.indexOf(c)}"><span class="cm ${c.flock ? '' : 'o'}"></span><span>${c.flock ? 'Flock Safety' : esc(c.mfr || 'Unknown maker')}<small>${c.dirs.length ? 'Faces ' + c.dirs.map(compass).join(' & ') : 'Direction not mapped'}${c.op ? ' · ' + esc(c.op) : ''}</small></span><span class="d">${Math.round(d / 10) * 10} m</span></button>`).join('')}</div>` : '<div class="note">None mapped nearby.</div>'}
       <div class="fine">Community-mapped in OpenStreetMap, the same data DeFlock shows, so coverage is incomplete.</div></div>` : ''}`;
   el.hidden = false;
   renderGameNote(); applySheet();
   el.querySelectorAll('[data-cam]').forEach(n => n.onclick = () => fly(alpr[+n.dataset.cam].pos, Z.spot()));
+  el.querySelectorAll('[data-spd]').forEach(n => n.onclick = () => fly(speedMid(speed[+n.dataset.spd]), Z.addr()));
   el.querySelectorAll('[data-lot]').forEach(n => n.onclick = () => { const l = lots[+n.dataset.lot]; fly(l.pos, Z.spot()); });
 }
 const fmtISO = s => { const [y, m, d] = s.split('-').map(Number); return MON[m - 1] + ' ' + d; };
@@ -991,6 +1009,7 @@ $('#showMeters').onchange = e => { S.showMeters = e.target.checked; redraw(); };
 $('#showLots').onchange = e => { S.showLots = e.target.checked; redraw(); };
 $('#showDistricts').onchange = e => { S.showDistricts = e.target.checked; redraw(); };
 $('#showAlpr').onchange = e => { S.showAlpr = e.target.checked; redraw(); if (S.sel) renderDetail(); };
+$('#showSpeed').onchange = e => { S.showSpeed = e.target.checked; redraw(); if (S.sel) renderDetail(); };
 $('#railToggle').onclick = () => { const r = $('#rail'); r.classList.toggle('collapsed'); $('#railToggle').setAttribute('aria-expanded', !r.classList.contains('collapsed')); };
 
 // search
@@ -1078,8 +1097,8 @@ $('#reset').onclick = () => {
   q.value = ''; sugg.hidden = true; sList = []; sIdx = -1;
   S.mode = 'window'; S.tcat = -1; S.tAll = false;
   $('#mode').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === 'window'));
-  S.showMeters = S.showLots = S.showAlpr = true; S.showDistricts = false;
-  for (const [id, on] of [['showMeters', true], ['showLots', true], ['showAlpr', true], ['showDistricts', false]]) $('#' + id).checked = on;
+  S.showMeters = S.showLots = S.showAlpr = S.showSpeed = true; S.showDistricts = false;
+  for (const [id, on] of [['showMeters', true], ['showLots', true], ['showAlpr', true], ['showSpeed', true], ['showDistricts', false]]) $('#' + id).checked = on;
   preset('default');
   vs = { ...fitView(false), transitionDuration: matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 600, transitionInterpolator: new deck.FlyToInterpolator() };
   deckgl.setProps({ viewState: vs });
@@ -1089,7 +1108,7 @@ const onTheme = () => { syncTheme(); readTokens(); update(); };
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if (!store.get('curbwatch-theme')) { delete document.documentElement.dataset.theme; onTheme(); } });
 new MutationObserver(onTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
 
-$('#sources').innerHTML = `Sources: Dodger Stadium home dates, LADOT meters &amp; sensors, StreetsLA sweeping routes, LA parking citations (${fmtISO(C.citeRange[0])}–${fmtISO(C.citeRange[1])}; permit tickets from ${fmtISOy(C.permitRange[0])}), City of West Hollywood GIS, LA County addresses, OpenStreetMap, plate-reader locations from OpenStreetMap as mapped for DeFlock (${alpr.length} in area, ${alpr.filter(a => a.flock).length} Flock). Built ${esc(C.meta.built)}.`;
+$('#sources').innerHTML = `Sources: Dodger Stadium home dates, LADOT meters &amp; sensors, StreetsLA sweeping routes, LA parking citations (${fmtISO(C.citeRange[0])}–${fmtISO(C.citeRange[1])}; permit tickets from ${fmtISOy(C.permitRange[0])}), City of West Hollywood GIS, LA County addresses, OpenStreetMap, plate-reader locations from OpenStreetMap as mapped for DeFlock (${alpr.length} in area, ${alpr.filter(a => a.flock).length} Flock), LADOT speed-camera corridors (${speed.length} in area, traced on OpenStreetMap streets). Built ${esc(C.meta.built)}.`;
 
 
 preset('default');

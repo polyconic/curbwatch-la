@@ -1,6 +1,6 @@
 # CurbWatch LA
 
-> Street-parking map for central Los Angeles, from Echo Park to West Hollywood. Search an address or click any block to see its street-sweeping days, whether it's a permit street and when that's enforced, Dodger game-day restrictions, meters, nearby lots, plate-reader cameras, and where tickets get written.
+> Street-parking map for central Los Angeles, from Echo Park to West Hollywood. Search an address or click any block to see its street-sweeping days, whether it's a permit street and when that's enforced, Dodger game-day restrictions, meters, nearby lots, plate-reader and speed cameras, and where tickets get written.
 
 Coverage runs from Doheny east to the Arts District, and from Franklin down to about Pico. That takes in Echo Park, Silver Lake, Los Feliz, East Hollywood, Koreatown, Hollywood, Mid-Wilshire, Fairfax, Beverly Grove, West Hollywood, Westlake, Downtown, Chinatown, Little Tokyo and the Arts District. Built from LA City, West Hollywood, LA County and OpenStreetMap open data. Corrections: hello@curbwatch.la.
 

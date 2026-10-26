@@ -448,6 +448,50 @@ for e in json.load(open('alpr.json'))['elements']:
 D['alpr'] = alpr
 print('alpr', len(alpr), sum(a[2] for a in alpr))
 
+# ---------- LADOT speed-camera corridors (tools/speed-cameras.json, hand-maintained)
+# Each corridor is "street: cross street to cross street". Trace it on the OSM street: find where the
+# street meets each cross street, then keep the street's lines inside the slab between those two points.
+from shapely.ops import linemerge, nearest_points, substring
+from shapely.geometry import box
+from shapely import affinity
+sbase = lambda n: re.sub(r'^[NSEW] ', '', short(re.sub(r'\s*\(.*\)$', '', n or '')))
+named = collections.defaultdict(list)
+for e in json.load(open('osm_roads.json'))['elements']:
+    h = e['tags']['highway']
+    if CLS.get(h) is None or h.endswith('_link'): continue
+    named[sbase(e['tags'].get('name'))].append(LineString([proj(g['lon'], g['lat']) for g in e['geometry']]))
+named = {k: unary_union(v) for k, v in named.items() if k}
+speed = []; skipped = []
+for c in json.load(open(ROOT / 'tools' / 'speed-cameras.json'))['corridors']:
+    st, ends = sbase(c['street']), [sbase(c['from']), sbase(c['to'])]
+    if st not in named or any(x not in named for x in ends): skipped.append(c['street'] + ': ' + c['from']); continue
+    S = named[st]
+    def meets(x):
+        i = S.intersection(named[x])
+        pts = [g for g in getattr(i, 'geoms', [i]) if g.geom_type == 'Point']
+        if not pts:  # a T-junction drawn without a shared node
+            p, o = nearest_points(S, named[x])
+            pts = [p] if p.distance(o) < 25 else []
+        return pts
+    A, B = meets(ends[0]), meets(ends[1])
+    if not A or not B: skipped.append(c['street'] + ': ' + c['from']); continue
+    # a street that jogs (Tamarind, Hobart) meets the corridor twice; the longer span covers the whole intersection
+    a, b = max(((p, r) for p in A for r in B), key=lambda pr: pr[0].distance(pr[1]))
+    if not all(inb(*unproj(p.x, p.y)) for p in (a, b)): skipped.append(c['street'] + ': ' + c['from']); continue
+    # follow the street itself (Highland bends north of Franklin); a divided street gives one line per side
+    lines = list(getattr(linemerge(S), 'geoms', [linemerge(S)])) if S.geom_type == 'MultiLineString' else [S]
+    cut = [substring(g, *sorted((g.project(a), g.project(b)))) for g in lines if g.distance(a) < 30 and g.distance(b) < 30]
+    if not cut:  # the street's lines break between the ends: keep whatever lies in the straight slab between them
+        L = a.distance(b)
+        slab = affinity.rotate(box(-L / 2, -30, L / 2, 30), math.atan2(b.y - a.y, b.x - a.x), origin=(0, 0), use_radians=True)
+        x = S.intersection(affinity.translate(slab, (a.x + b.x) / 2, (a.y + b.y) / 2))
+        if x.geom_type == 'MultiLineString': x = linemerge(x)
+        cut = list(getattr(x, 'geoms', [x]))
+    paths = [enc(simp_line([unproj(*p) for p in g.coords], 1)) for g in cut if g.geom_type == 'LineString' and g.length > 15]
+    if paths: speed.append([c['street'], c['from'], c['to'], c['on'], paths])
+D['speed'] = speed
+print('speed corridors', len(speed), 'outside the map', len(skipped), skipped)
+
 D['meta'] = dict(built=datetime.datetime.now().strftime('%Y-%m-%d %H:%M'), lon0=LON0, lat0=LAT0)
 s = json.dumps(D, separators=(',', ':'))
 NOTICE = ('/*! CurbWatch LA data snapshot. Street geometry, labels, parks/water, off-street lots tagged src "OSM" and the alpr\n'

@@ -107,6 +107,14 @@ impression.
 - Parkopedia was tried and rejected (403, client-rendered, proprietary).
 - Dodger dates live in `tools/dodgers-home.json`, hand-maintained on purpose: MLB's Stats
   API limits use to individual, non-commercial, non-bulk. Add next season by hand.
+- **Speed cameras** (LADOT Speed Safety System, first corridors on 2026-10-26) live in
+  `tools/speed-cameras.json`, hand-maintained: LADOT publishes per-council-district PDFs, not a
+  feed. Gregor's list is the first wave of 25 corridors; 12 fall inside the map and `build.py`
+  skips the rest (it prints them, so check that list is only out-of-area ones). Each corridor
+  is traced on the OSM street between its two cross streets, so the line is ODbL. A cross street
+  that jogs (Tamarind, Hobart) meets the corridor twice; the build keeps the longer span. The
+  list as pasted said "N Hayward Ave" on Melrose; it's N Hayworth. The panel derives the 60-day
+  warning window from each corridor's `on` date, so add new waves with their own date.
 - `curb-data.js` mixes ODbL (OSM) and city-open-data fields and carries a notice saying
   which is which — see `DATA-LICENSE.md`. Keep the OSM attribution in the page footer.
 

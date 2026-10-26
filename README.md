@@ -27,6 +27,7 @@ this data, so it's grayed out and a click there says so rather than implying the
 - **LA County:** address points, city boundaries
 - **OpenStreetMap:** streets, parks, parking lots, and plate-reader (ALPR) cameras, which is the same data DeFlock shows. © OpenStreetMap contributors
 - **Dodger Stadium home dates:** hand-maintained in `tools/dodgers-home.json`
+- **LADOT speed cameras:** the city's Speed Safety System corridors, hand-maintained in `tools/speed-cameras.json` and traced onto OpenStreetMap streets
 
 Terms differ by layer — see [DATA-LICENSE.md](DATA-LICENSE.md). The OSM-derived parts of
 `curb-data.js` are a derivative database under ODbL 1.0.

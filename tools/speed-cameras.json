@@ -1,0 +1,30 @@
+{
+  "_note": "LADOT Speed Safety System corridors, hand-maintained like dodgers-home.json. 'on' is the activation date; each corridor gets its own 60-day warning period from it (AB 645), then fines. build.py traces each corridor on the OSM street between its cross streets and skips any that fall outside the map. Program page: https://ladot.lacity.gov/speed-safety-system (per-council-district PDFs list all 125 planned sites). A cross street with '(north)' means its north leg where it jogs; build.py takes the intersection that gives the longer corridor, which covers that case.",
+  "corridors": [
+    {"street": "Beverly Blvd", "from": "Belmont Ave", "to": "Witmer St", "on": "2026-10-26"},
+    {"street": "W 8th St", "from": "S Westmoreland Ave", "to": "S Hoover St", "on": "2026-10-26"},
+    {"street": "Oxnard St", "from": "Ethel Ave", "to": "Coldwater Canyon Ave", "on": "2026-10-26"},
+    {"street": "Victory Blvd", "from": "Ethel Ave", "to": "Coldwater Canyon Ave", "on": "2026-10-26"},
+    {"street": "Highland Ave", "from": "Franklin Pl", "to": "Camrose Dr", "on": "2026-10-26"},
+    {"street": "Western Ave", "from": "Franklin Ave", "to": "Los Feliz Blvd", "on": "2026-10-26"},
+    {"street": "Franklin Ave", "from": "Cheremoya Ave", "to": "Tamarind Ave (north)", "on": "2026-10-26"},
+    {"street": "S La Cienega Blvd", "from": "W Pico Blvd", "to": "W Olympic Blvd", "on": "2026-10-26"},
+    {"street": "La Brea Ave", "from": "W 1st St", "to": "Beverly Blvd", "on": "2026-10-26"},
+    {"street": "Olympic Blvd", "from": "S La Brea Ave", "to": "S Sycamore Ave", "on": "2026-10-26"},
+    {"street": "Fairfax Ave", "from": "Clinton St", "to": "Waring Ave", "on": "2026-10-26"},
+    {"street": "W Olympic Blvd", "from": "Alvira St", "to": "Stearns Dr", "on": "2026-10-26"},
+    {"street": "Melrose Ave", "from": "N Hayworth Ave", "to": "N Orange Grove Ave", "on": "2026-10-26"},
+    {"street": "Victory Blvd", "from": "Kester Ave", "to": "Cedros Ave", "on": "2026-10-26"},
+    {"street": "Sepulveda Blvd", "from": "Tupper St", "to": "Plummer St", "on": "2026-10-26"},
+    {"street": "Foothill Blvd", "from": "Newhome Ave", "to": "Sherman Grove Ave", "on": "2026-10-26"},
+    {"street": "W Florence Ave", "from": "S Vermont Ave", "to": "S Hoover St", "on": "2026-10-26"},
+    {"street": "S Vermont Ave", "from": "W 66th St", "to": "W Florence Ave", "on": "2026-10-26"},
+    {"street": "S La Cienega Blvd", "from": "3721 S La Cienega Blvd", "to": "Bowesfield St", "on": "2026-10-26"},
+    {"street": "Venice Blvd", "from": "Lincoln Blvd", "to": "Pisani Pl", "on": "2026-10-26"},
+    {"street": "National Blvd", "from": "Butler Ave", "to": "405 Freeway", "on": "2026-10-26"},
+    {"street": "Balboa Blvd", "from": "Lassen St", "to": "Plummer St", "on": "2026-10-26"},
+    {"street": "Nordhoff St", "from": "Petit Ave", "to": "Gothic Ave", "on": "2026-10-26"},
+    {"street": "Santa Monica Blvd", "from": "N Hobart Blvd", "to": "N Normandie Ave", "on": "2026-10-26"},
+    {"street": "S Gaffey St", "from": "W 1st St", "to": "W 2nd St", "on": "2026-10-26"}
+  ]
+}
