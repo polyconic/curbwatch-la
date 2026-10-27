@@ -492,6 +492,46 @@ for c in json.load(open(ROOT / 'tools' / 'speed-cameras.json'))['corridors']:
 D['speed'] = speed
 print('speed corridors', len(speed), 'outside the map', len(skipped), skipped)
 
+# ---------- named places for search (OSM): type "LACMA" or "Trader Joe's" instead of an address
+NOT_PLACES = {'parking', 'parking_entrance', 'parking_space', 'motorcycle_parking', 'bicycle_parking', 'bench', 'waste_basket', 'waste_disposal',
+              'recycling', 'vending_machine', 'toilets', 'drinking_water', 'telephone', 'post_box', 'shelter', 'atm', 'charging_station', 'bicycle_rental',
+              'fountain', 'clock', 'grit_bin', 'loading_dock', 'taxi', 'car_sharing', 'parcel_locker', 'yes'}
+CAT_NAME = {'fast_food': 'Fast food', 'place_of_worship': 'Place of worship', 'ice_cream': 'Ice cream', 'fuel': 'Gas station', 'car_repair': 'Auto repair',
+            'clothes': 'Clothing', 'convenience': 'Convenience store', 'supermarket': 'Grocery', 'hairdresser': 'Hair salon', 'beauty': 'Beauty salon',
+            'fitness_centre': 'Gym', 'sports_centre': 'Sports center', 'artwork': 'Public art', 'attraction': 'Attraction', 'theatre': 'Theater',
+            'townhall': 'City hall', 'retail': 'Shopping', 'mall': 'Shopping center', 'community_centre': 'Community center', 'social_facility': 'Social services', 'yes': ''}
+PLACE_KEYS = ('amenity', 'shop', 'leisure', 'tourism', 'historic', 'railway', 'public_transport', 'healthcare', 'office', 'craft', 'club', 'landuse', 'building')
+cats, cidx, places = [], {}, []
+def ci(c):
+    if c not in cidx: cidx[c] = len(cats); cats.append(c)
+    return cidx[c]
+seen = collections.defaultdict(list)
+for e in json.load(open('osm_places.json'))['elements']:
+    t = e.get('tags', {}); nm = (t.get('name') or '').strip()
+    lat, lon = (e['lat'], e['lon']) if 'lat' in e else (e['center']['lat'], e['center']['lon'])
+    if not nm or not inb(lon, lat) or t.get('amenity') in NOT_PLACES or 'parking' in nm.lower(): continue
+    k = next(k for k in PLACE_KEYS if k in t)
+    v = t[k]
+    c = 'Station' if k in ('railway', 'public_transport') else CAT_NAME.get(v, v.replace('_', ' ').capitalize()) if k != 'building' else ''
+    addr = f"{t['addr:housenumber']} {short(t['addr:street'])}" if t.get('addr:housenumber') and t.get('addr:street') else ''
+    # other names people type ("LACMA"), and whether the place is notable enough to have a Wikipedia/Wikidata entry
+    alias = ';'.join(a for k2 in ('short_name', 'alt_name', 'official_name', 'name:en', 'old_name') for a in (t.get(k2) or '').split(';') if a.strip() and a.strip() != nm)
+    big = 1 if ('wikidata' in t or 'wikipedia' in t) else 0
+    x, y = proj(lon, lat)
+    # OSM often maps a place twice (the building and a point inside it): keep one, preferring the one with an address
+    dup = next((d for d in seen[nm.lower()] if math.hypot(d[0] - x, d[1] - y) < 80), None)
+    if dup:
+        if addr and not places[dup[2]][4]: places[dup[2]][4] = addr
+        if c and not cats[places[dup[2]][3]]: places[dup[2]][3] = ci(c)
+        if alias and not places[dup[2]][5]: places[dup[2]][5] = alias
+        places[dup[2]][6] |= big
+        continue
+    seen[nm.lower()].append((x, y, len(places)))
+    places.append([nm, *q(lon, lat), ci(c), addr, alias, big])
+D['placeCats'] = cats
+D['places'] = places
+print('places', len(places), 'with address', sum(1 for p in places if p[4]), 'notable', sum(p[6] for p in places), 'kB', len(json.dumps(places)) // 1000)
+
 D['meta'] = dict(built=datetime.datetime.now().strftime('%Y-%m-%d %H:%M'), lon0=LON0, lat0=LAT0)
 s = json.dumps(D, separators=(',', ':'))
 NOTICE = ('/*! CurbWatch LA data snapshot. Street geometry, labels, parks/water, off-street lots tagged src "OSM" and the alpr\n'

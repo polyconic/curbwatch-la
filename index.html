@@ -268,10 +268,10 @@ details.src p{margin:6px 0 0}
         <button class="chip railtoggle" id="railToggle" aria-expanded="false">Options</button>
       </div>
     </div>
-    <p class="brand-p note" style="margin:0">Echo Park to West Hollywood. Search an address, or click a block, to see what its signs say and who gets ticketed there.</p>
+    <p class="brand-p note" style="margin:0">Echo Park to West Hollywood. Search an address or place, or click a block, to see what its signs say and who gets ticketed there.</p>
     <div class="search">
       <svg viewBox="0 0 16 16"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg>
-      <input id="q" type="search" placeholder="Search an address" autocomplete="off" aria-label="Search an address or street">
+      <input id="q" type="search" placeholder="Search an address or place" autocomplete="off" aria-label="Search an address, street or place">
       <div class="sugg" id="sugg" hidden></div>
     </div>
   </div>
@@ -730,8 +730,68 @@ function suggestions(input) {
   const m = input.trim().match(/^(\d+)?\s*(.*)$/); const num = m[1], rest = norm(m[2] || '');
   if (rest.length < 2) return [];
   const rb = rest.replace(/^(N|S|E|W) /, '');
-  return streets.filter(s => s.base.startsWith(rb) || s.key.startsWith(rest)).sort((a, b) => b.nums.length - a.nums.length).slice(0, 6)
-    .map(s => ({ text: (num ? num + ' ' : '') + title(s.key), n: s.nums.length, range: s.nums[0] + '–' + s.nums[s.nums.length - 1] }));
+  const st = streets.filter(s => s.base.startsWith(rb) || s.key.startsWith(rest)).sort((a, b) => b.nums.length - a.nums.length).slice(0, num ? 6 : 4)
+    .map(s => ({ text: (num ? num + ' ' : '') + title(s.key), sub: s.nums[0] + '–' + s.nums[s.nums.length - 1] }));
+  if (num) return st;
+  const pl = findPlaces(input).map(p => ({ text: p.n, sub: [p.cat, p.addr].filter(Boolean).join(' · '), place: p }));
+  // an exact name, a neighborhood or a notable place goes above the streets; "melrose" still means Melrose Ave first
+  const lead = pl.filter(x => x.place.hood || x.place.big || x.place.keys.includes(pnorm(input)) || !st.length);
+  return [...lead, ...st, ...pl.filter(x => !lead.includes(x))].slice(0, 7);
+}
+// ---------- places: named OSM places (shops, parks, schools...) and the neighborhood labels
+const pnorm = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/['’.]/g, '').replace(/&/g, ' and ').replace(/[^a-z0-9]+/g, ' ').trim();
+const places = [
+  ...hoods.map(h => ({ n: h[0], pos: [h[1], h[2]], cat: 'Neighborhood', addr: '', hood: true })),
+  ...(C.places || []).map(([n, x, y, c, addr, alias, big]) => ({ n, pos: P([x, y]), cat: C.placeCats[c], addr, alias, big })),
+].map(pl => ({ ...pl, key: pnorm(pl.n), keys: [pnorm(pl.n), ...(pl.alias ? pl.alias.split(';').map(pnorm) : [])] }));
+const placeQ = pl => pl.n + (pl.addr ? ', ' + pl.addr : '');
+const viewDist = pl => typeof vs === 'undefined' ? 0 : Math.hypot(pl.pos[0] - vs.longitude, pl.pos[1] - vs.latitude);
+function findPlaces(input, limit = 5) {
+  const k = pnorm(input); if (k.length < 2) return [];
+  const words = k.split(' '), out = [];
+  for (const pl of places) {
+    const sc = Math.max(...pl.keys.map(key => key === k ? 4 : key.startsWith(k) ? 3 : key.includes(' ' + k) ? 2 : words.length > 1 && words.every(w => key.includes(w)) ? 1 : 0));
+    // neighborhoods and notable places (ones with a Wikipedia entry) beat the gift shop and the ticket office
+    if (sc) out.push([pl, sc + (pl.hood ? .6 : pl.big ? .5 : 0)]);
+  }
+  // chains (Starbucks, Trader Joe's) list the branches closest to where the map is looking
+  out.sort((a, b) => b[1] - a[1] || viewDist(a[0]) - viewDist(b[0]));
+  const res = [];
+  for (const [pl] of out) {
+    // the same name mapped twice nearby (two "LACMA Store" points) is one result
+    if (res.some(r => r.key === pl.key && r.addr === pl.addr && Math.hypot(r.pos[0] - pl.pos[0], r.pos[1] - pl.pos[1]) < .005)) continue;
+    res.push(pl); if (res.length >= limit) break;
+  }
+  return res;
+}
+// "Name" or "Name, 123 Some St" (how place links are written) -> that place
+function exactPlace(text) {
+  const t = text.trim(), i = t.lastIndexOf(', ');
+  for (const [name, addr] of [[t, ''], ...(i > 0 ? [[t.slice(0, i), t.slice(i + 2)]] : [])]) {
+    const m = places.filter(pl => pl.keys.includes(pnorm(name)) && (!addr || pnorm(pl.addr) === pnorm(addr)));
+    if (m.length) return m.sort((a, b) => (b.key === pnorm(name)) - (a.key === pnorm(name)) || (b.hood ? 2 : b.big ? 1 : 0) - (a.hood ? 2 : a.big ? 1 : 0) || viewDist(a) - viewDist(b))[0];
+  }
+  return null;
+}
+// a place lands on the curb the way its address would: its own address, or the nearest address point
+function placeSpot(pl) {
+  const g = pl.addr && geocode(pl.addr);
+  if (g && g.num != null && Math.hypot(...[0, 1].map(j => toM(...g.pt)[j] - toM(...pl.pos)[j])) < 250 && near(gBlocks, blocks, ...g.pt).some(bl => pathDist(toM(...g.pt), bl.path) < 40)) return g;
+  const pm = toM(...pl.pos); let best = null, bd = Infinity;
+  for (const [si, i] of near(gAddr, addrPts, pl.pos[0], pl.pos[1], 2)) { const st = streets[si], d = Math.hypot(...[0, 1].map(j => toM(st.xs[i], st.ys[i])[j] - pm[j])); if (d < bd) { bd = d; best = { pt: [st.xs[i], st.ys[i]], street: st, num: st.nums[i] }; } }
+  if (best && bd < 120) return best;
+  // a stadium or a park can sit a long way from any address or curb: put the pin on the nearest block instead
+  const pt = best ? best.pt : pl.pos, qm = toM(...pt);
+  let nb = null, nd = Infinity;
+  for (const bl of near(gBlocks, blocks, pt[0], pt[1], 3)) { const d = pathDist(qm, bl.path); if (d < nd) { nd = d; nb = bl; } }
+  if (!nb || nd < 40) return best || { pt, num: null };
+  let cp = pt, cd = Infinity;
+  for (let i = 1; i < nb.path.length; i++) {
+    const a = toM(...nb.path[i - 1]), b = toM(...nb.path[i]), dx = b[0] - a[0], dy = b[1] - a[1], L = dx * dx + dy * dy;
+    const t = L ? Math.max(0, Math.min(1, ((qm[0] - a[0]) * dx + (qm[1] - a[1]) * dy) / L)) : 0, x = a[0] + t * dx, y = a[1] + t * dy, d = Math.hypot(qm[0] - x, qm[1] - y);
+    if (d < cd) { cd = d; cp = [x / KX - 118.3, y / KY + 34.08]; }
+  }
+  return { pt: cp, num: null };
 }
 function nearestAddr(lon, lat) {
   const pm = toM(lon, lat); let best = null, bd = 45;
@@ -1017,7 +1077,9 @@ $('#railToggle').onclick = () => { const r = $('#rail'); r.classList.toggle('col
 
 // search
 const q = $('#q'), sugg = $('#sugg'); let sIdx = -1, sList = [];
-function go(text) {
+function go(text, pick) {
+  const pl = pick ? pick.place : /^\s*\d/.test(text) ? null : exactPlace(text);
+  if (pl) return goPlace(pl);
   const g = geocode(text);
   sugg.hidden = true;
   if (!g) { q.setCustomValidity('Not found'); q.reportValidity(); setTimeout(() => q.setCustomValidity(''), 1500); return; }
@@ -1025,21 +1087,28 @@ function go(text) {
   fly(g.pt, g.num != null ? Z.addr() : Z.street()); query(g.pt[0], g.pt[1], g.label, g.num != null ? { base: g.street.base, num: g.num } : null);
   setURL('?q=' + encodeURIComponent(g.label));
 }
-// searches are linkable (?q=<address>); the 404 page's search box lands here too
+function goPlace(pl) {
+  sugg.hidden = true; q.value = pl.n; if (isMobile()) q.blur(); S.touched = true;
+  setURL('?q=' + encodeURIComponent(placeQ(pl)));
+  if (pl.hood) { clearSel(); setURL('?q=' + encodeURIComponent(pl.n)); fly(pl.pos, Z.street()); return; }
+  const g = placeSpot(pl);
+  fly(g.pt, Z.addr()); query(g.pt[0], g.pt[1], pl.n, g.num != null ? { base: g.street.base, num: g.num } : null);
+}
+// searches are linkable (?q=<address> or ?q=<place>); the 404 page's search box lands here too
 const setURL = s => { try { history.replaceState(null, '', s); } catch (e) {} };
 function clearSel() { S.sel = null; $('#detail').hidden = true; applySheet(); renderGameNote(); redraw(); setURL(location.pathname); }
 q.oninput = () => {
   sList = suggestions(q.value); sIdx = -1;
-  sugg.innerHTML = sList.map((s, i) => `<button data-i="${i}">${esc(s.text)}<small>${s.range}</small></button>`).join('');
+  sugg.innerHTML = sList.map((s, i) => `<button data-i="${i}">${esc(s.text)}<small>${esc(s.sub)}</small></button>`).join('');
   sugg.hidden = !sList.length;
 };
 q.onkeydown = e => {
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { if (!sList.length) return; e.preventDefault(); sIdx = (sIdx + (e.key === 'ArrowDown' ? 1 : -1) + sList.length) % sList.length; sugg.querySelectorAll('button').forEach((b, i) => b.classList.toggle('on', i === sIdx)); }
   // Enter on a half-typed street takes the top suggestion rather than failing on the partial
-  if (e.key === 'Enter') { e.preventDefault(); go(sIdx >= 0 ? sList[sIdx].text : (sList.length && !geocode(q.value)) ? sList[0].text : q.value); }
+  if (e.key === 'Enter') { e.preventDefault(); const it = sIdx >= 0 ? sList[sIdx] : (sList.length && !exactPlace(q.value) && !geocode(q.value)) ? sList[0] : null; it ? go(it.text, it) : go(q.value); }
   if (e.key === 'Escape') sugg.hidden = true;
 };
-sugg.onmousedown = e => { const b = e.target.closest('button'); if (b) { e.preventDefault(); go(sList[+b.dataset.i].text); } };
+sugg.onmousedown = e => { const b = e.target.closest('button'); if (b) { e.preventDefault(); const it = sList[+b.dataset.i]; go(it.text, it); } };
 q.onblur = () => setTimeout(() => sugg.hidden = true, 100);
 
 // ---------- map setup
@@ -1117,7 +1186,7 @@ $('#sources').innerHTML = `Sources: Dodger Stadium home dates, LADOT meters &amp
 preset('default');
 // a linked search opens on that address; otherwise the map opens clean, no block selected
 const linked = new URLSearchParams(location.search).get('q');
-if (linked && geocode(linked)) go(linked);
+if (linked && (exactPlace(linked) || geocode(linked))) go(linked);
 else if (linked) setURL(location.pathname);
 else {
   // the neighborhood pages link here with ?at=lon,lat,zoom to open the map on that area

@@ -1,6 +1,6 @@
 # CurbWatch LA
 
-Street parking, block by block, from Echo Park to West Hollywood. Search an address or click any block to see its street-sweeping days, whether it's a permit street and when that's enforced, Dodger game-day restrictions, meters, nearby lots, plate-reader cameras, and where tickets actually get written.
+Street parking, block by block, from Echo Park to West Hollywood. Search an address or a place (a shop, park, school or venue), or click any block, to see its street-sweeping days, whether it's a permit street and when that's enforced, Dodger game-day restrictions, meters, nearby lots, plate-reader cameras, and where tickets actually get written.
 
 ## Coverage
 
@@ -25,7 +25,7 @@ this data, so it's grayed out and a click there says so rather than implying the
 - **LA City:** StreetsLA posted sweeping routes, street centerlines, LADOT meter inventory and live occupancy, LADOT city lots, and LA parking citations (last 6 months for ticket history, last 18 months for permit streets)
 - **West Hollywood:** city GIS permit blocks with posted hours, permit districts, sweeping lines, and public lots
 - **LA County:** address points, city boundaries
-- **OpenStreetMap:** streets, parks, parking lots, and plate-reader (ALPR) cameras, which is the same data DeFlock shows. © OpenStreetMap contributors
+- **OpenStreetMap:** streets, parks, parking lots, named places for search, and plate-reader (ALPR) cameras, which is the same data DeFlock shows. © OpenStreetMap contributors
 - **Dodger Stadium home dates:** hand-maintained in `tools/dodgers-home.json`
 - **LADOT speed cameras:** the city's Speed Safety System corridors, hand-maintained in `tools/speed-cameras.json` and traced onto OpenStreetMap streets
 

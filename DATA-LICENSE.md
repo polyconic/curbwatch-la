@@ -13,6 +13,7 @@ inherits the same obligation:
 - `roads`, `labels` — street geometry and names
 - `green` — parks, water, cemeteries
 - `alpr` — plate-reader camera locations, direction, maker, operator (the data DeFlock renders)
+- `places`, `placeCats` — named places for search (shops, parks, schools, venues), with category and address
 - `speed` — speed-camera corridor lines, traced on OSM streets (the corridor list, names and
   activation dates are LADOT's)
 - `lots` entries with `"src": "OSM"` — off-street parking

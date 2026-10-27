@@ -142,6 +142,21 @@ So the "they ticket when no sweeper came" story is NOT provable from open data â
 publishes no sweeper GPS or completion records. Per-ticket schedule mismatch is real but
 rare. Any public number must come from the verified column, not the first pass.
 
+## Place search (added 2026-10-26)
+
+The search box takes places as well as addresses. `fetch.py` pulls named OSM places (amenity, shop,
+parks, tourism, offices, stations, named retail areas like The Grove) into `osm_places.json`;
+`build.py` drops non-destinations (parking, benches, toilets...), merges the same name mapped twice
+within 80 m, and ships `places` as `[name, x, y, cat, addr, aliases, notable]` (~6,450, ~400 kB).
+Everything is bundled: a live geocoder (Google, Nominatim) would break the no-third-party-requests
+promise. Notable = has a Wikipedia/Wikidata tag; notable places and neighborhood names rank above
+streets, so "lacma" (an alias) gives the museum and "echo park" the neighborhood, while "melrose"
+still gives Melrose Ave first. A leading number always means an address. A picked place lands
+where its address would (`placeSpot`): its own address point, else the nearest one, else the
+nearest point on the nearest block (Dodger Stadium sits in its own lots). Links are
+`?q=<name>, <address>` so chain branches stay distinct. Griffith Park is outside the bbox, so it
+isn't searchable.
+
 ## Neighborhood pages (added 2026-10-06, for search)
 
 `python3 tools/neighborhoods.py` (run after `build.py`) writes `/echo-park/`, `/silver-lake/`,

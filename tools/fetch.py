@@ -97,6 +97,11 @@ save('addrpts.json', [[f['attributes'][k] for k in ('Number', 'NumSuffix', 'PreD
 save('osm_roads.json', overpass(f'[out:json][timeout:180];(way["highway"~"^(motorway|trunk|primary|secondary|tertiary|unclassified|residential|living_street|motorway_link|trunk_link|primary_link|secondary_link|tertiary_link|service)$"]{box};);out tags geom;'))
 save('osm_green.json', overpass(f'[out:json][timeout:180];(way["leisure"~"^(park|golf_course)$"]{box};relation["leisure"="park"]{box};way["natural"="water"]{box};relation["natural"="water"]{box};way["landuse"="cemetery"]{box};);out tags geom;'))
 save('osm_parking.json', overpass(f'[out:json][timeout:120];(nwr["amenity"="parking"]{box};nwr["parking"]["amenity"!="parking"]{box};);out tags center;'))
+# named places for search (businesses, parks, schools, stations...), so people can type a place instead of an address
+PLACES = ('["amenity"]', '["shop"]', '["leisure"~"^(park|garden|playground|sports_centre|stadium|fitness_centre|dog_park|swimming_pool|pitch|golf_course|nature_reserve)$"]',
+          '["tourism"]', '["historic"]', '["office"]', '["healthcare"]', '["craft"]', '["club"]',
+          '["railway"="station"]', '["public_transport"="station"]', '["landuse"="retail"]', '["building"~"^(church|school|hospital|university|college|civic|public|stadium|hotel|retail|commercial)$"]')
+save('osm_places.json', overpass('[out:json][timeout:240];(' + ''.join(f'nwr["name"]{t}{box};' for t in PLACES) + ');out tags center;'))
 save('alpr.json', overpass(f'[out:json][timeout:120];(nwr["surveillance:type"="ALPR"]{box};nwr["surveillance:type"="alpr"]{box};);out tags center;'))
 
 # Dodger Stadium home dates (District D game-day restrictions) are kept by hand in tools/dodgers-home.json —
